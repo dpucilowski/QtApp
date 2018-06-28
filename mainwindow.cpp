@@ -6,6 +6,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    int width = this->width();
+    int height = this->height();
+    this->setFixedSize(QSize(width, height));
+
+    ui->label_logininfo->setStyleSheet("QLabel {  color : red; }");
 
     database_ =  QSqlDatabase::addDatabase("QSQLITE");
     database_.setDatabaseName("C:/Qt Projects/QtApp/qt_database.sqlite");
@@ -35,16 +40,25 @@ void MainWindow::on_pushButton_login_clicked()
 {
     QString username = ui->lineEdit_username->text();
     QString password = ui->lineEdit_password->text();
-
-    QSqlQuery qry;
-    qry.exec("select * from User where username='"+username+"' and password='"+password+"'");
-
-    if(qry.next())
+    if(!password.isEmpty() && !username.isEmpty())
     {
-        QString name = qry.value(0).toString();
-        int id = qry.value(1).toInt();
-        QMessageBox::information(this, tr("information"), name);
-        qDebug() << name << id;
-    }
+        QSqlQuery qry;
+        qry.exec("select * from User where username='"+username+"' and password='"+password+"'");
 
+        if(qry.next())
+        {
+            QMessageBox::information(this, tr("Login"), tr("You are logged in"));
+        }
+        else
+        {
+            ui->label_logininfo->setText("Incorrect name or password");
+        }
+
+        ui->lineEdit_username->clear();
+        ui->lineEdit_password->clear();
+    }
+    else
+    {
+        ui->label_logininfo->setText("You have to fill login and password");
+    }
 }

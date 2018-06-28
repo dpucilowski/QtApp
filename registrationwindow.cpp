@@ -7,6 +7,12 @@ RegistrationWindow::RegistrationWindow(QWidget *parent, QSqlDatabase &database) 
     database_(database)
 {
     ui->setupUi(this);
+
+    int width = this->width();
+    int height = this->height();
+    this->setFixedSize(QSize(width, height));
+
+    ui->label_signupinfo->setStyleSheet("QLabel {  color : red; }");
 }
 
 RegistrationWindow::~RegistrationWindow()
@@ -21,29 +27,33 @@ void RegistrationWindow::on_pushButton_signup_clicked()
     QString rpassword = ui->lineEdit_rpassword->text();
     QString email = ui->lineEdit_email->text();
 
-
-    if(password == rpassword)
+    if(!username.isEmpty() && !password.isEmpty() && !rpassword.isEmpty() && !email.isEmpty())
     {
-        QSqlQuery qry;
-        qry.prepare("insert into User(username,password,email) values('"+username+"','"+password+"','"+email+"')");
-
-//        qry.prepare("INSERT INTO User(username,password,email) VALUES(:username,:password,:email)");
-
-//        qry.bindValue(":username", username);
-//        qry.bindValue(":password", password);
-//        qry.bindValue(":email", email);
-
-        if(qry.exec())
+        if(password == rpassword)
         {
-            QMessageBox::information(this, tr("Save"), tr("Done"));
+            QSqlQuery qry;
+            qry.prepare(
+                "insert into User(username,password,email,id)"
+                "values('"+username+"','"+password+"','"+email+"',NULL)");
+
+            if(qry.exec())
+            {
+                QMessageBox::information(this, tr("Registartion"), tr("Done"));
+            }
+            else
+            {
+                ui->label_signupinfo->setText(qry.lastError().text());
+            }
+            this->close();
         }
         else
         {
-            QMessageBox::critical(this, tr("error::"), qry.lastError().text());
+            ui->label_signupinfo->setText("Passwords have to be the same");
         }
     }
     else
     {
-        qDebug() << "Passwords have to be the same!";
+        ui->label_signupinfo->setText("You have to fill all fields");
     }
+
 }
